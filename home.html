@@ -1,0 +1,193 @@
+<html>
+  <head>
+    <title>MyMovieDB</title>
+    <meta charset="utf-8" />
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+      }
+      body  {
+        font-family: calibri,sans-serif;
+        color: darkslategray;
+        font-weight: 400;
+      }
+      h1,h2,h3  {
+        font-weight: 400;
+      }
+      header  {
+        color: white;
+        background-color: rgb(0,0,0);
+        padding-top: 1em;
+        padding-bottom: 1em;
+        text-align: center;
+        font-size: 1.7em;
+      }
+      #title,#year  {
+        width: 23em;
+        padding: 0.7em;
+        text-align: center;
+        transition: width 0.5s ease-in-out;
+        border: 1px solid lightgray;
+        border-radius: 10px;
+      }
+      #title:focus,#year:focus  {
+        width: 28em;
+        box-shadow: inset 0px 0px 6px 3px lightblue;
+      }
+      #search {
+        font-size: 1.1em;
+        border: 1px solid black;
+        padding: 0.5em;
+        margin: 2em;
+      }
+      #search:hover {
+        background-color: black;
+        color: white;
+        cursor: pointer;
+      }
+      #wrapper  {
+        background-image: url('movie.jpeg');
+        background-repeat: no-repeat;
+        background-size: cover;
+      }
+      .field  {
+        float: left;
+        margin: 1em;
+        background-color: rgba(255,255,255,0.7);
+        box-shadow: 5px 5px 5px 5px rgba(255,255,255,0.7);
+        padding: 1em;
+      }
+      h2  {
+        margin-bottom: 1em;
+        text-align:center;
+      }
+      table {
+        width: 70vw;
+      }
+      td  {
+        text-align: center;
+        padding: 0.5em;
+        color: black;
+      }
+      tr:nth-child(odd)  {
+        background-color: #C2D6D6;
+      }
+      tr:nth-child(even)  {
+        background-color: #E0EBEB;
+      }
+      footer  {
+        margin-top: 2em;
+        margin-bottom: 0.5em;
+        text-align: center;
+      }
+      @media screen and (max-device-width:481px) {
+        .field  {
+          margin: 1em;
+          float: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>Welcome to MyMovieDB</header>
+    <div id="wrapper">
+      <div class="field">
+        <h2>Title</h2>
+        <input type="text" id="title" placeholder="Enter title" required/>
+      </div>
+      <div class="field">
+        <h2>Year(optional)</h2>
+        <input type="number" id="year" maxlength="4" placeholder="Enter year" />
+      </div>
+      <div class="field">
+        <h2>Type</h2>
+        <input type="radio" name="type" id="movie" value="movie"/>Movie<br />
+        <input type="radio" name="type" id="series" value="series" />Series<br />
+      </div>
+      <div class="field">
+        <h2>Plot</h2>
+        <input type="radio" name="plot" id="short" value="short" checked/>Short<br />
+        <input type="radio" name="plot" id="full" value="full" />Full<br />
+      </div>
+
+      <br /><br /><br /><br />
+      <center>
+        <button type="button" id="search">Search</button>
+      </center>
+    </div>
+    <br />
+    <h3 style="color:red" id="error"></h3>
+    <center>
+      <div id="results"></div>
+    </center>
+    <footer>
+      Made with JavaScript,AJAX and <span style="color:red">&hearts;</span>
+    </footer>
+
+    <script type="text/javascript">
+      document.getElementById('search').addEventListener("click",srch);
+      function srch() {
+        var title = document.getElementById('title').value;
+        var year = document.getElementById('year').value;
+        if(document.getElementById('movie').checked)  {
+          var type = document.getElementById('movie').value;
+        }
+        else if (document.getElementById('series').checked) {
+          var type = document.getElementById('series').value;
+        }
+        else {
+          var type = "";
+        }
+        if(document.getElementById('short').checked)  {
+          var plot = document.getElementById('short').value;
+        }
+        else if (document.getElementById('full').checked) {
+          var plot = document.getElementById('full').value;
+        }
+        title = title.replace(/ /g,"+");
+
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function ()  {
+          if(xmlhttp.readyState == 4 && xmlhttp.status == 200)  {
+            var data = JSON.parse(xmlhttp.responseText);
+
+            if(data.Response == "False")  {
+              document.getElementById('error').textContent = "Sorry! No such movie found.";
+            }
+            else {
+
+                //document.getElementById('poster').src = data['Poster'];
+                //document.getElementById('poster').style.display = "block";
+                document.getElementById('error').textContent = "";
+                var output = "<h1>Search Results</h1>";
+                output+=('<img id="poster" src="'+ data['Poster']+'" width="400px" height="500px"/>');
+                output+="<table>";
+
+                delete data['Poster'];
+                delete data['Metascore'];
+                delete data['Type'];
+                delete data['Response'];
+                for (var prop in data)  {
+                  //document.getElementById('searchresults').innerHTML += prop+":"+data[prop];
+                  output+="<tr><td>";
+                  output+=prop;
+                  output+="</td><td>";
+                  output+=(data[prop]);
+                  output+="</td></tr>";
+                }
+
+                output+="</table>";
+                document.getElementById('results').innerHTML = output;
+                console.log(document.getElementById('poster').src);
+            }
+          }
+        };
+        var url = "http://www.omdbapi.com?t="+title+"&y="+year+"&plot="+plot+"&type="+type;
+        console.log(url);
+        xmlhttp.open("GET",url,true);
+        xmlhttp.send();
+      }
+    </script>
+  </body>
+</html>
